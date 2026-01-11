@@ -37,8 +37,8 @@ const manifestPath = `${srcDir}/manifest.json`;
 const packageJsonPath = `${rootDir}/package.json`;
 const allPossibleScreenshotsType = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 const manifest = readManifest(manifestPath);
-// const pluginNameWoExt = `${manifest.id}@${manifest.version}`;
-const pluginNameWoExt = `${manifest.id}`;
+const pluginNameWoExt = `${manifest.id}@${manifest.version}`;
+// const pluginNameWoExt = `${manifest.id}`;
 const pluginArchiveFilePath = path.resolve(publishDir, `${pluginNameWoExt}.jpl`);
 const pluginInfoFilePath = path.resolve(publishDir, `${pluginNameWoExt}.json`);
 

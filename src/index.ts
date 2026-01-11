@@ -64,6 +64,10 @@ joplin.plugins.register({
 						return null;
 					}
 				} else if (msg.type === ContextMsgType.SHORTCUT) {
+					// https://joplinapp.org/api/references/plugin_api/classes/joplincommands.html
+					// https://github.com/laurent22/joplin/blob/dev/packages/app-desktop/gui/NoteEditor/editorCommandDeclarations.ts
+					// https://codemirror.net/docs/ref/#commands
+					// https://www.tiny.cloud/docs/tinymce/latest/editor-command-identifiers/#coreeditorcommands
 					switch (msg.content) {
 						case 'markdownBold':
 							await joplin.commands.execute('textBold');
@@ -77,6 +81,7 @@ joplin.plugins.register({
 						case 'markdownCode':
 							await joplin.commands.execute('textCode');
 							break;
+						case 'markdownStrikeThrough':
 						case 'markdownHL1':
 						case 'markdownHL2':
 						case 'markdownHL3':

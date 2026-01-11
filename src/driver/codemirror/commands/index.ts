@@ -25,6 +25,7 @@ export function initCommands(cm, CodeMirror) {
 
     if (cm.cm6) {
         addCommand("markdownInlineMath", commandBridge.markdownInlineMath.bind(commandBridge));
+        addCommand("markdownStrikeThrough", commandBridge.markdownStrikeThrough.bind(commandBridge));
 
         CodeMirror.registerCommand(
             "cm6-insert-table",
@@ -72,6 +73,13 @@ class CommandsBridge {
             return;
         }
         markdownInline(this.cm, `<mark style="background: ${color}">`, '</mark>', 'mark')
+    }
+
+    markdownStrikeThrough() {
+        if (isReadOnly(this.cm)) {
+            return;
+        }
+        markdownInline(this.cm, "~~", "~~");
     }
 
     markdownInlineMath() {

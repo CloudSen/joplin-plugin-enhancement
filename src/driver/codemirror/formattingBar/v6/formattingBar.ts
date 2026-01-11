@@ -41,12 +41,17 @@ const commandInfos: CommandInfo[] = [
         alt: 'Italic',
     },
     {
+        name: 'markdownStrikeThrough',
+        icon: 'fas fa-strikethrough in-button',
+        alt: 'Strike Through',
+    },
+    {
         name: 'markdownLink',
         icon: 'fas fa-link in-button',
         alt: 'Link',
     },
     {
-        alt: 'Code',
+        alt: 'Inline Code',
         name: 'markdownCode',
         icon: 'fas fa-code in-button',
     },
