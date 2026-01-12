@@ -16,10 +16,12 @@
 // - https://codemirror.net/examples/tooltip/
 
 import { requireCodeMirrorState, requireCodeMirrorView } from '../../../../utils/cm-dynamic-require';
-import type { EditorState } from '@codemirror/state';
+import type { EditorState, SelectionRange } from '@codemirror/state';
 import type { Tooltip } from '@codemirror/view';
 import { ContentScriptContext } from 'api/types';
 import { ContextMsgType } from '../../../../common';
+import { stat } from 'fs';
+import { isDragging } from './dragDetection';
 
 interface CommandInfo {
     name: string;
@@ -67,11 +69,23 @@ const commandInfos: CommandInfo[] = [
     }))),
 ];
 
+function isMultiLineSelection(state: EditorState, range: SelectionRange) {
+    const startLine = state.doc.lineAt(range.from);
+    const endLine = state.doc.lineAt(range.to);
+    return startLine.number !== endLine.number;
+}
+
+let isShow = false;
+
 const buildTooltips = (state: EditorState, context: ContentScriptContext): Tooltip[] => {
     return state.selection.ranges
         // Only show for non-empty selection ranges
-        .filter(range => !range.empty)
+        .filter(range => {
+            // console.log(`Dragging: ${isDragging}`);
+            return !range.empty && !isMultiLineSelection(state, range);
+        })
         .map((range): Tooltip => {
+            isShow = true;
             return {
                 pos: range.from,
                 above: true,
@@ -114,6 +128,13 @@ const formattingBarStateField = (context: ContentScriptContext) => {
         create: state => buildTooltips(state, context),
 
         update: (tooltips, tr) => {
+            // console.log(`Dragging2: ${isDragging}`);
+            if(isDragging && isShow){
+                isShow = false;
+                return [];
+            }
+            isShow = true;
+
             if (!tr.docChanged && !tr.selection) {
                 return tooltips;
             }
