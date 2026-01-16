@@ -27,6 +27,7 @@ import {
 	ENABLE_TASK_RENDER,
 	EnhancementConfig,
 } from "./common";
+import inputRowsCols from './driver/codemirror/insertTable/v6/inputRowsCols';
 
 joplin.plugins.register({
 	onStart: async function() {
@@ -63,6 +64,10 @@ joplin.plugins.register({
 						return null;
 					}
 				} else if (msg.type === ContextMsgType.SHORTCUT) {
+					// https://joplinapp.org/api/references/plugin_api/classes/joplincommands.html
+					// https://github.com/laurent22/joplin/blob/dev/packages/app-desktop/gui/NoteEditor/editorCommandDeclarations.ts
+					// https://codemirror.net/docs/ref/#commands
+					// https://www.tiny.cloud/docs/tinymce/latest/editor-command-identifiers/#coreeditorcommands
 					switch (msg.content) {
 						case 'markdownBold':
 							await joplin.commands.execute('textBold');
@@ -76,6 +81,7 @@ joplin.plugins.register({
 						case 'markdownCode':
 							await joplin.commands.execute('textCode');
 							break;
+						case 'markdownStrikeThrough':
 						case 'markdownHL1':
 						case 'markdownHL2':
 						case 'markdownHL3':
@@ -83,6 +89,7 @@ joplin.plugins.register({
 						case 'markdownHL5':
 						case 'markdownHL6':
 						case 'markdownHL7':
+            			case 'markdownInlineMath':
 							await joplin.commands.execute('editor.execCommand', {
 								name: msg.content
 							});
@@ -92,6 +99,26 @@ joplin.plugins.register({
 					}
 				}
 			}
+		);
+
+		await joplin.commands.register({
+			name: 'insertTable',
+			label: 'Insert Table',
+			iconName: 'fas fa-table',
+			execute: async () => {
+				const [rows, cols] = await inputRowsCols();
+				console.log(`index, rows: ${rows}, cols: ${cols}`);
+				await joplin.commands.execute('editor.execCommand', {
+					name: 'cm6-insert-table',
+					args: [rows, cols],
+				});
+			},
+		});
+
+		await joplin.views.toolbarButtons.create(
+			'insert-table',
+			'insertTable',
+			ToolbarButtonLocation.EditorToolbar
 		);
 
 		if (enhancementConfig.imageEnhancement) {

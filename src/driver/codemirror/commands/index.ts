@@ -1,4 +1,5 @@
 import { isReadOnly } from "../../../utils/cm-utils";
+import insertTable from "../insertTable/v6/insertTable";
 
 export function initCommands(cm, CodeMirror) {
     const commandBridge = new CommandsBridge(cm);
@@ -21,6 +22,18 @@ export function initCommands(cm, CodeMirror) {
     addCommand('markdownHL5', commandBridge.hL5.bind(commandBridge));
     addCommand('markdownHL6', commandBridge.hL6.bind(commandBridge));
     addCommand('markdownHL7', commandBridge.hL7.bind(commandBridge));
+
+    if (cm.cm6) {
+        addCommand("markdownInlineMath", commandBridge.markdownInlineMath.bind(commandBridge));
+        addCommand("markdownStrikeThrough", commandBridge.markdownStrikeThrough.bind(commandBridge));
+
+        CodeMirror.registerCommand(
+            "cm6-insert-table",
+            (rows: number, cols: number) => {
+                insertTable(cm.cm6, rows, cols);
+            }
+        );
+    }
 }
 
 class CommandsBridge {
@@ -61,8 +74,21 @@ class CommandsBridge {
         }
         markdownInline(this.cm, `<mark style="background: ${color}">`, '</mark>', 'mark')
     }
-}
 
+    markdownStrikeThrough() {
+        if (isReadOnly(this.cm)) {
+            return;
+        }
+        markdownInline(this.cm, "~~", "~~");
+    }
+
+    markdownInlineMath() {
+        if (isReadOnly(this.cm)) {
+            return;
+        }
+        markdownInline(this.cm, "$", "$");
+    }
+}
 
 /**
  * Converts selection into a markdown inline element (or removes formatting)
