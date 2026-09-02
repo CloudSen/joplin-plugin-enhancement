@@ -23,7 +23,7 @@ export class CMBlockMarkerHelper {
                 private readonly blockRegexp: RegExp,
                 private readonly blockStartTokenRegexp: RegExp,
                 private readonly blockEndTokenRegex: RegExp,
-                private readonly renderer: (beginMatch, endMatch, content, fromLine, toLine) => HTMLElement,
+                private readonly renderer: (beginMatch, endMatch, content, fromLine, toLine, onRendered: () => void) => HTMLElement,
                 private readonly spanRenderer: () => HTMLElement,
                 private readonly MARKER_CLASS_NAME: string,
                 private readonly clearOnClick: boolean,
@@ -210,9 +210,20 @@ export class CMBlockMarkerHelper {
 
                 // build the line widget just after the marker with the rendered element
                 const wrapper = document.createElement('div');
-                const element = this.renderer(blockRange.beginMatch, blockRange.endMatch, blockContentLines.join('\n'), from.line, to.line);
+                let lineWidget;
+                let renderedBeforeLineWidget = false;
+                const onRendered = () => {
+                    if (lineWidget) {
+                        lineWidget.changed();
+                    } else {
+                        renderedBeforeLineWidget = true;
+                    }
+                    this.editor.refresh();
+                };
+                const element = this.renderer(blockRange.beginMatch, blockRange.endMatch, blockContentLines.join('\n'), from.line, to.line, onRendered);
                 wrapper.appendChild(element);
-                const lineWidget = this.createLineWidgetForMarker(doc, to.line, textMarker, wrapper);
+                lineWidget = this.createLineWidgetForMarker(doc, to.line, textMarker, wrapper);
+                if (renderedBeforeLineWidget) onRendered();
                 this.setStyleAndLogical(doc, from, to, textMarker, markerEl, wrapper, lineWidget);
                 // console.log(`line ${from.line}-${to.line} is processed successfully`);
             } else {
