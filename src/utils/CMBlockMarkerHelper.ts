@@ -212,13 +212,17 @@ export class CMBlockMarkerHelper {
                 const wrapper = document.createElement('div');
                 let lineWidget;
                 let renderedBeforeLineWidget = false;
-                const onRendered = () => {
+                const updateLineWidgetLayout = () => {
                     if (lineWidget) {
                         lineWidget.changed();
                     } else {
                         renderedBeforeLineWidget = true;
                     }
                     this.editor.refresh();
+                };
+                const onRendered = () => {
+                    updateLineWidgetLayout();
+                    window.requestAnimationFrame(updateLineWidgetLayout);
                 };
                 const element = this.renderer(blockRange.beginMatch, blockRange.endMatch, blockContentLines.join('\n'), from.line, to.line, onRendered);
                 wrapper.appendChild(element);

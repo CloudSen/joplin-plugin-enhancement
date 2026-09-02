@@ -3,8 +3,17 @@
     font-family: "trebuchet ms",verdana,arial,sans-serif !important;
 }
 
+.CodeMirror-sizer .mermaid-chart {
+    display: block;
+    overflow: visible;
+    width: 100%;
+}
+
 .CodeMirror-sizer .mermaid-chart svg {
-    max-height: 300px;
+    display: block;
+    height: auto !important;
+    max-height: none !important;
+    max-width: 100% !important;
 }
 
 .enhancement-mermaid-block-marker-line {

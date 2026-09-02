@@ -1,4 +1,5 @@
 import {CMBlockMarkerHelper} from "../../../utils/CMBlockMarkerHelper";
+import {normalizeMermaidLineBreaks} from "../../../utils/normalizeMermaidLineBreaks";
 import mermaid from 'mermaid'
 import {LineHandle} from "codemirror";
 
@@ -10,7 +11,7 @@ mermaid.initialize({ startOnLoad: false })
 
 async function renderMermaid(svg: HTMLSpanElement, id: string, content: string, onRendered: () => void): Promise<void> {
     try {
-        const result = await mermaid.render(id, content);
+        const result = await mermaid.render(id, normalizeMermaidLineBreaks(content));
         svg.innerHTML = typeof result === 'string' ? result : result.svg;
         if (typeof result !== 'string') result.bindFunctions?.(svg);
     } catch (err) {

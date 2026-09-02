@@ -41,6 +41,12 @@ joplin.plugins.register({
 			'./driver/codemirror/index.js'
 		);
 
+		await joplin.contentScripts.register(
+			ContentScriptType.MarkdownItPlugin,
+			'enhancement_mermaid_line_breaks',
+			'./driver/markdownItRenderer/mermaid/index.js'
+		);
+
 		if (enhancementConfig.admonitionCmRender) {
 			await joplin.contentScripts.register(
 				ContentScriptType.CodeMirrorPlugin,
