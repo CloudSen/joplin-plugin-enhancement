@@ -42,13 +42,17 @@ export class CMBlockMarkerHelper {
             this.unfoldAtCursor();
         }.bind(this), 100);
 
-        this.editor.on('change', async function (cm, changeObjs) {
-            if (changeObjs.origin === 'undo' || changeObjs.origin === 'redo') {
-                await debounceProcess();
-            }
-        }.bind(this));
+        this.editor.on('change', debounceProcess);
         this.editor.on('cursorActivity', debounceProcess);
         this.editor.on('viewportChange', debounceProcess);
+
+        // Content scripts are attached after the editor has received its
+        // initial document. Render once without waiting for a cursor move or
+        // scroll, which is especially important for CodeMirror 6.
+        setTimeout(() => {
+            this.process(true);
+            this.unfoldAtCursor();
+        }, 100);
     }
 
     /**

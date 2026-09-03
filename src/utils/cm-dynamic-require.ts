@@ -8,19 +8,18 @@
  * available and perhaps in some cases while using CodeMirror 5.
  */
 
-import joplin from 'api';
 import type * as CodeMirrorView from '@codemirror/view';
 import type * as CodeMirrorState from '@codemirror/state';
 import type * as CodeMirrorLanguage from '@codemirror/language';
 
 export function requireCodeMirrorView() {
-    return joplin.require('@codemirror/view') as typeof CodeMirrorView;
+    return require('@codemirror/view') as typeof CodeMirrorView;
 }
 
 export function requireCodeMirrorState() {
-    return joplin.require('@codemirror/state') as typeof CodeMirrorState;
+    return require('@codemirror/state') as typeof CodeMirrorState;
 }
 
 export function requireCodeMirrorLanguage() {
-    return joplin.require('@codemirror/language') as typeof CodeMirrorLanguage;
+    return require('@codemirror/language') as typeof CodeMirrorLanguage;
 }

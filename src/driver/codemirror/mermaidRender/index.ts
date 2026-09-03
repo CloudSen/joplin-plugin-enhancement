@@ -2,7 +2,6 @@ import {CMBlockMarkerHelper} from "../../../utils/CMBlockMarkerHelper";
 import {normalizeMermaidLineBreaks} from "../../../utils/normalizeMermaidLineBreaks";
 import mermaid from 'mermaid'
 import {LineHandle} from "codemirror";
-import mermaidRenderV6 from './v6';
 
 const ENHANCEMENT_MERMAID_SPAN_MARKER_CLASS = 'enhancement-mermaid-block-marker';
 const ENHANCEMENT_MERMAID_SPAN_MARKER_LINE_CLASS = 'enhancement-mermaid-block-marker-line';
@@ -25,11 +24,9 @@ async function renderMermaid(svg: HTMLSpanElement, id: string, content: string, 
 }
 
 export default function mermaidRender(cm) {
-    if (cm.cm6) {
-        cm.addExtension(mermaidRenderV6());
-        return;
-    }
-
+    // Joplin's CodeMirror 6 control exposes its CodeMirror 5 marker and
+    // line-widget compatibility API. Keeping the renderer on that API means
+    // the content script does not need to load a second copy of CodeMirror.
     // Block Katex Math Render
     new CMBlockMarkerHelper(cm, null, /^\s*```mermaid\s*$/, /^\s*```\s*$/, (beginMatch, endMatch, content, fromLine, toLine, onRendered) => {
         // code from zettlr
