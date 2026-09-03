@@ -1,7 +1,8 @@
 import mermaid from 'mermaid';
 import type { Range } from '@codemirror/state';
-import type { Decoration, DecorationSet, EditorView, ViewUpdate, WidgetType } from '@codemirror/view';
-import { requireCodeMirrorLanguage, requireCodeMirrorView } from '../../../utils/cm-dynamic-require';
+import type { EditorState } from '@codemirror/state';
+import type { Decoration, DecorationSet, EditorView, WidgetType } from '@codemirror/view';
+import { requireCodeMirrorLanguage, requireCodeMirrorState, requireCodeMirrorView } from '../../../utils/cm-dynamic-require';
 import { normalizeMermaidLineBreaks } from '../../../utils/normalizeMermaidLineBreaks';
 import { rangeInSelection } from '../../../utils/range-in-selection';
 
@@ -13,7 +14,8 @@ function mermaidCodeFromFence(source: string): string | null {
 }
 
 const mermaidRenderV6 = () => {
-    const { ViewPlugin, WidgetType, Decoration } = requireCodeMirrorView();
+    const { EditorView, WidgetType, Decoration } = requireCodeMirrorView();
+    const { StateField } = requireCodeMirrorState();
     const { syntaxTree } = requireCodeMirrorLanguage();
 
     class MermaidWidget extends WidgetType {
@@ -50,46 +52,37 @@ const mermaidRenderV6 = () => {
         }
     }
 
-    const buildDecorations = (view: EditorView): DecorationSet => {
+    const buildDecorations = (state: EditorState): DecorationSet => {
         const decorations: Range<Decoration>[] = [];
 
-        for (const { from, to } of view.visibleRanges) {
-            syntaxTree(view.state).iterate({
-                from,
-                to,
-                enter: (node) => {
-                    if (node.name !== 'FencedCode') return;
+        syntaxTree(state).iterate({
+            enter: (node) => {
+                if (node.name !== 'FencedCode') return;
 
-                    const source = view.state.sliceDoc(node.from, node.to);
-                    const content = mermaidCodeFromFence(source);
-                    if (content === null || rangeInSelection(view.state, node.from, node.to, true)) return false;
+                const source = state.sliceDoc(node.from, node.to);
+                const content = mermaidCodeFromFence(source);
+                if (content === null || rangeInSelection(state, node.from, node.to, true)) return false;
 
-                    decorations.push(Decoration.replace({
-                        block: true,
-                        widget: new MermaidWidget(content),
-                    }).range(node.from, node.to));
-                    return false;
-                },
-            });
-        }
+                decorations.push(Decoration.replace({
+                    block: true,
+                    widget: new MermaidWidget(content),
+                }).range(node.from, node.to));
+                return false;
+            },
+        });
 
         return Decoration.set(decorations, true);
     };
 
-    return ViewPlugin.fromClass(class {
-        public decorations: DecorationSet;
-
-        public constructor(view: EditorView) {
-            this.decorations = buildDecorations(view);
-        }
-
-        public update(update: ViewUpdate) {
-            if (update.docChanged || update.viewportChanged || update.selectionSet) {
-                this.decorations = buildDecorations(update.view);
+    return StateField.define({
+        create: buildDecorations,
+        update: (decorations: DecorationSet, transaction) => {
+            if (transaction.docChanged || transaction.selection) {
+                return buildDecorations(transaction.state);
             }
-        }
-    }, {
-        decorations: (plugin) => plugin.decorations,
+            return decorations;
+        },
+        provide: (field) => EditorView.decorations.from(field),
     });
 };
 
