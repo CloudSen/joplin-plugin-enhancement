@@ -1,5 +1,5 @@
 import { isReadOnly } from "../../../utils/cm-utils";
-import insertTable from "../insertTable/v6/insertTable";
+import { buildPipeMarkdownTable } from "../../../utils/build-pipe-markdown-table";
 
 export function initCommands(cm, CodeMirror) {
     const commandBridge = new CommandsBridge(cm);
@@ -30,7 +30,17 @@ export function initCommands(cm, CodeMirror) {
         CodeMirror.registerCommand(
             "cm6-insert-table",
             (rows: number, cols: number) => {
-                insertTable(cm.cm6, rows, cols);
+                if (!Number.isInteger(rows) || !Number.isInteger(cols) || rows < 0 || cols < 0) {
+                    return;
+                }
+
+                const tableData = buildPipeMarkdownTable(
+                    Array.from({ length: rows }, () => Array(cols).fill('')),
+                    Array(cols).fill(null),
+                );
+                // The CM5-compatible editor wrapper handles this operation in
+                // both editor engines, without importing CM6 modules.
+                cm.replaceSelection(tableData);
             }
         );
     }
