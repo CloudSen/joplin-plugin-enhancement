@@ -4,6 +4,34 @@ import {isRangeSelected} from "./cm-utils";
 
 export class CMBlockMarkerHelper {
 
+    private static selectionGuardInstalled = false;
+
+    private static installSelectionGuard() {
+        if (CMBlockMarkerHelper.selectionGuardInstalled) {
+            return;
+        }
+
+        CMBlockMarkerHelper.selectionGuardInstalled = true;
+        const preventEditorSelection = (event: Event) => {
+            const target = event.target;
+            if (!(target instanceof Element)
+                || !target.closest('[data-enhancement-block-marker]')
+                || target.closest('.enhancement-block-marker-edit-button')) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        };
+
+        // CodeMirror handles mouse events on the editor root. Listen on the
+        // document's capture phase so the editor cannot turn a click on a
+        // rendered block into a selection of the hidden fenced source.
+        for (const eventName of ['pointerdown', 'mousedown', 'mouseup', 'click', 'selectstart']) {
+            document.addEventListener(eventName, preventEditorSelection, true);
+        }
+    }
+
     /**
      * Constructor
      * @param editor Codemirror editor
@@ -32,6 +60,7 @@ export class CMBlockMarkerHelper {
      * @private
      */
     private init() {
+        CMBlockMarkerHelper.installSelectionGuard();
         const debounceProcess = debounce(function () {
             this.process(false);
             this.unfoldAtCursor();
@@ -209,6 +238,15 @@ export class CMBlockMarkerHelper {
 
                 // build the line widget just after the marker with the rendered element
                 const wrapper = document.createElement('div');
+                // A line widget lives inside CodeMirror's contenteditable root.
+                // Without this, a click on a Mermaid node selects the folded
+                // source range and CodeMirror paints a large selection box over
+                // the SVG. The chart itself is display-only; editing remains
+                // available through the edit button below.
+                wrapper.contentEditable = 'false';
+                wrapper.dataset.enhancementBlockMarker = 'true';
+                wrapper.style.userSelect = 'none';
+                wrapper.style.webkitUserSelect = 'none';
                 let lineWidget;
                 let renderedBeforeLineWidget = false;
                 const updateLineWidgetLayout = () => {
@@ -283,6 +321,7 @@ export class CMBlockMarkerHelper {
     private setStyleAndLogical(doc, from, to, textMarker, renderedWrapper, wrapperLineWidget) {
         renderedWrapper.style.cssText = 'position: relative; box-sizing: border-box; border: 2px solid transparent; padding: 2px; width: 100%; overflow-x: auto; border-radius: 4px; background-color: var(--joplin-background-color) !important; transition: border-color 500ms;';
         const editButton = document.createElement('div');
+        editButton.classList.add('enhancement-block-marker-edit-button');
         editButton.innerHTML = `<svg viewBox="0 0 100 100" class="code-glyph" width="16" height="16"><path fill="currentColor" stroke="currentColor" d="M56.6,13.3c-1.6,0-2.9,1.2-3.2,2.7L40.1,82.7c-0.3,1.2,0.1,2.4,1,3.2c0.9,0.8,2.2,1.1,3.3,0.7c1.1-0.4,2-1.4,2.2-2.6 l13.3-66.7c0.2-1,0-2-0.7-2.8S57.6,13.3,56.6,13.3z M24.2,26.6c-1.1,0-2.1,0.5-2.8,1.4l-14.1,20c-0.8,1.2-0.8,2.7,0,3.9l14.1,20 c1.1,1.5,3.1,1.9,4.6,0.8c1.5-1.1,1.9-3.1,0.8-4.6L14.1,50l12.8-18.1c0.7-1,0.8-2.4,0.3-3.5C26.6,27.3,25.4,26.6,24.2,26.6 L24.2,26.6z M76.5,26.6c-1.2,0-2.4,0.8-2.9,1.9c-0.5,1.1-0.4,2.4,0.3,3.4L86.7,50L73.9,68.1c-0.7,1-0.8,2.2-0.3,3.3 s1.5,1.8,2.7,1.9c1.2,0.1,2.3-0.4,3-1.4l14.1-20c0.8-1.2,0.8-2.7,0-3.9l-14.1-20C78.7,27.1,77.7,26.6,76.5,26.6L76.5,26.6z"></path></svg>`;
         editButton.style.cssText = 'position: absolute; top: 8px; right: 10px; width: 24px; height: 24px;' +
             'background-color: #19a2f0 !important; color: #f2f2f2; border-radius: 5px; display: flex; align-items: center; justify-content: center; transition: opacity 500ms;';
