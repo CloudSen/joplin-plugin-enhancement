@@ -35,12 +35,7 @@ export default function mermaidRender(cm) {
         svg.classList.add('mermaid-chart')
         void renderMermaid(svg, `graphDivL${fromLine}-L${toLine}${Date.now()}`, content, onRendered);
         return svg;
-    }, () => {
-        const span = document.createElement('span');
-        span.textContent = '===> Folded Mermaid Code Block <===';
-        span.style.cssText = 'color: lightgray; font-size: smaller; font-style: italic;';
-        return span;
-    },ENHANCEMENT_MERMAID_SPAN_MARKER_CLASS, true);
+    }, ENHANCEMENT_MERMAID_SPAN_MARKER_CLASS, true);
 
     cm.on('renderLine', (editor, line: LineHandle, element: Element) => {
         if (element.getElementsByClassName(ENHANCEMENT_MERMAID_SPAN_MARKER_CLASS).length > 0) {
