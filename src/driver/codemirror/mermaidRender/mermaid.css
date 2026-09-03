@@ -19,3 +19,16 @@
 .enhancement-mermaid-block-marker-line {
     display: none;
 }
+
+.cm-editor .cm-enhancement-mermaid-chart {
+    display: block;
+    overflow: auto;
+    width: 100%;
+}
+
+.cm-editor .cm-enhancement-mermaid-chart svg {
+    display: block;
+    height: auto !important;
+    max-height: none !important;
+    max-width: 100% !important;
+}
